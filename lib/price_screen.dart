@@ -1,5 +1,6 @@
 // import 'package:flutter/cupertino.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'coin_data.dart';
 import 'dart:io' show Platform; // you can "show","hide" or "as" a library
@@ -70,13 +71,13 @@ class _PriceScreenState extends State<PriceScreen> {
         children: cupertinoDropdown);
   }
 
-  // Widget getPicker() {
-  //   if (Platform.isIOS) {
-  //     return iOSPicker();
-  //   } else {
-  //     return andriodDropdown();
-  //   }
-  // }
+  Widget getPicker() {
+    if (!kIsWeb && Platform.isIOS) {
+      return iOSPicker();
+    } else {
+      return andriodDropdown();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +116,7 @@ class _PriceScreenState extends State<PriceScreen> {
             alignment: Alignment.center,
             // padding: const EdgeInsets.only(bottom: 20.0),
             color: Colors.lightBlue,
-            child: Platform.isIOS ? iOSPicker() : andriodDropdown(),
+            child: getPicker()
           ),
         ],
       ),
