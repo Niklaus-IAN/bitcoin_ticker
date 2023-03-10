@@ -18,27 +18,24 @@ class _PriceScreenState extends State<PriceScreen> {
 
   // String coins = 'BTC';
 
-  CoinData btcData = CoinData();
-
   // late String money;
 
   //value had to be updated into a Map to store the values of all three cryptocurrencies.
-  Map<String, String> coinValues = {};
+  List<Map<String, dynamic>> coinData = [];
 
   //7: Figure out a way of displaying a '?' on screen while we're waiting for the price data to come back. First we have to create a variable to keep track of when we're waiting on the request to complete.
-  bool isWaiting = false;
 
-  void btcdatas() async {
-    isWaiting = true;
+  Future<void> getCoinData() async {
+    CoinData coinDataInstance = CoinData();
     try {
-      var data = await btcData.getCoinData(kvalMoney);
+      List<Map<String, dynamic>> data = await coinDataInstance
+          .getCoinData(kvalMoney) as List<Map<String, dynamic>>;
       //13. We can't await in a setState(). So you have to separate it out into two steps.
 
       //7: Second, we set it to true when we initiate the request for prices.
-      print(data);
-      isWaiting = false;
+
       setState(() {
-        coinValues = data;
+        coinData = [...data];
         // toStringAsFixed rounds up the value also makes it a string
       });
     } catch (e) {
@@ -50,7 +47,11 @@ class _PriceScreenState extends State<PriceScreen> {
   void initState() {
     super.initState();
     //14. Call btcdatas() when the screen loads up. We can't call CoinData().getCoinData() directly here because we can't make initState() async.
-    btcdatas();
+    getData();
+  }
+
+  void getData() async {
+    await getCoinData();
   }
 
   // String monies = btcdatas();
@@ -83,10 +84,10 @@ class _PriceScreenState extends State<PriceScreen> {
         DropdownButton<String>(
           value: kvalMoney,
           items: dropdownItems,
-          onChanged: (value) {
+          onChanged: (value) async {
+            await getCoinData();
             setState(() {
               kvalMoney = value.toString();
-              btcdatas();
             });
             // kvalMoney = value;
           },
@@ -110,10 +111,10 @@ class _PriceScreenState extends State<PriceScreen> {
         backgroundColor: Colors.lightBlue,
         magnification: 1.0,
         itemExtent: 32.0,
-        onSelectedItemChanged: (selectedIndex) {
+        onSelectedItemChanged: (selectedIndex) async {
+          await getCoinData();
           setState(() {
             kvalMoney = currenciesList[selectedIndex].toString();
-            btcdatas();
           });
         },
         children: cupertinoDropdown);
@@ -134,12 +135,18 @@ class _PriceScreenState extends State<PriceScreen> {
 
   List<Widget> cryptoInfos() {
     List<Widget> buildedCard = [];
-    for (String coins in cryptoList) {
+
+    for (String coin in cryptoList) {
       buildedCard.add(
         BuildCard(
-          money: coins,
+          money: coin,
           //7. Finally, we use a ternary operator to check if we are waiting and if so, we'll display a '?' otherwise we'll show the actual price data.
-          currency: isWaiting ? '?' : coinValues[coins],
+          currency: coinData.isNotEmpty
+              ? coinData
+                  .where((element) => element['asset_id_base'] == coin)
+                  .toList()[0]["rate"]
+                  .toStringAsFixed(0)
+              : "Loading...",
           kvalMoney: kvalMoney,
         ),
       );

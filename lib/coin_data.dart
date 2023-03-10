@@ -37,7 +37,7 @@ class CoinData {
   Future<dynamic> getCoinData(String coinprice) async {
     //4: Use a for loop here to loop through the cryptoList and request the data for each of them in turn.
     //5: Return a Map of the results instead of a single value.
-    Map<String, String> cryptoPrices = {};
+    List<Map<String, dynamic>> cryptoPrices = [];
     // String? coin;
     for (String crypto in cryptoList) {
       Uri url = Uri.https(
@@ -50,16 +50,14 @@ class CoinData {
       if (response.statusCode == 200) {
         // print(response.statusCode);
         // print(response.body);
-        var data = response.body;
-        print(data);
+        var data = jsonDecode(response.body) as Map<String, dynamic>;
+        print("$data <------");
         // return jsonDecode(data);
         // var longitude = jsonDecode(data)['coord']['lon'];
         // print(longitude);
-        double datum = jsonDecode(data)['rate'];
+        cryptoPrices.add(data);
         //Create a new key value pair, with the key being the crypto symbol and the value being the lastPrice of that crypto currency.
-        cryptoPrices[crypto] = datum.toStringAsFixed(0);
         // print(moneys);
-
         // var weatherReport = jsonDecode(data)['weather'][0]['id'];
         // var cityName = jsonDecode(data)['name'];
         // var temperature = jsonDecode(data)['main']['temp'];
@@ -72,8 +70,8 @@ class CoinData {
         // Throwing an error
         throw 'Problem with the get request';
       }
-      return cryptoPrices;
     }
+    return cryptoPrices;
   }
 
   // Future<http.Response> fetchAlbum() {
